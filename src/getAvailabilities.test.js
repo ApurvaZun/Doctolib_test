@@ -18,15 +18,15 @@ describe("getAvailabilities", () => {
     beforeEach(async () => {
       await knex("events").insert([
         {
-          kind: "appointment",
-          starts_at: new Date("2014-08-11 10:30"),
-          ends_at: new Date("2014-08-11 11:30")
-        },
-        {
           kind: "opening",
           starts_at: new Date("2014-08-04 09:30"),
           ends_at: new Date("2014-08-04 12:30"),
           weekly_recurring: true
+        },
+        {
+          kind: "appointment",
+          starts_at: new Date("2014-08-11 10:30"),
+          ends_at: new Date("2014-08-11 11:30")
         }
       ]);
     });
@@ -47,7 +47,7 @@ describe("getAvailabilities", () => {
         "9:30",
         "10:00",
         "11:30",
-        „14:00"
+        "12:00"
       ]);
 
       expect(String(availabilities[6].date)).toBe(
@@ -60,15 +60,15 @@ describe("getAvailabilities", () => {
     beforeEach(async () => {
       await knex("events").insert([
         {
+          kind: "opening",
+          starts_at: new Date("2014-08-04 09:30"),
+          ends_at: new Date("2014-08-04 12:30"),
+          weekly_recurring: true
+        },
+        {
           kind: "appointment",
           starts_at: new Date("2014-08-11 10:30"),
           ends_at: new Date("2014-08-11 11:30")
-        },
-        {
-          kind: "opening",
-          starts_at: new Date("2018-08-04 09:30"),
-          ends_at: new Date("2018-08-04 12:30"),
-          weekly_recurring: true
         }
       ]);
     });
@@ -86,6 +86,51 @@ describe("getAvailabilities", () => {
         String(new Date("2014-08-11"))
       );
       expect(availabilities[6].slots).toEqual([]);
+    });
+  });
+
+  describe("case 4", () => {
+    beforeEach(async () => {
+      await knex("events").insert([
+        {
+          kind: "opening",
+          starts_at: new Date("2014-08-11 09:30"),
+          ends_at: new Date("2014-08-11 12:30")
+        },
+        {
+          kind: "opening",
+          starts_at: new Date("2014-08-03 09:30"),
+          ends_at: new Date("2014-08-03 12:30"),
+          weekly_recurring: true
+        },
+        {
+          kind: "appointment",
+          starts_at: new Date("2014-08-11 10:30"),
+          ends_at: new Date("2014-08-11 11:30")
+        },
+        {
+          kind: "appointment",
+          starts_at: new Date("2014-08-10 9:30"),
+          ends_at: new Date("2014-08-10 11:30")
+        }
+      ]);
+    });
+
+    it("test 1", async () => {
+      const availabilities = await getAvailabilities(
+        new Date("2014-08-10"),
+        10
+      );
+      expect(availabilities.length).toBe(7);
+
+      expect(availabilities[0].date.length).toEqual(2);
+
+      expect(availabilities[1].slots).toEqual([
+        "9:30",
+        "10:00",
+        "11:30",
+        "12:00"
+      ]);
     });
   });
 });

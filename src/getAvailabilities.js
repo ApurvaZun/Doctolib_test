@@ -1,14 +1,19 @@
 import moment from "moment";
 import knex from "knexClient";
 
-export default async function getAvailabilities(date) {
+export default async function getAvailabilities(date, numberOfDays = 7) {
   const availabilities = new Map();
-  for (let i = 0; i < 7; ++i) {
+  for (let i = 0; i < numberOfDays; ++i) {
     const tmpDate = moment(date).add(i, "days");
-    availabilities.set(tmpDate.format("d"), {
-      date: tmpDate.toDate(),
-      slots: []
-    });
+    if (availabilities.has(tmpDate.format("d"))) {
+      const day = availabilities.get(tmpDate.format("d"));
+      day.date.push(tmpDate.toDate());
+    } else {
+      availabilities.set(tmpDate.format("d"), {
+        date: [tmpDate.toDate()],
+        slots: []
+      });
+    }
   }
 
   const events = await knex
@@ -35,5 +40,5 @@ export default async function getAvailabilities(date) {
     }
   }
 
-  return Array.from(availabilities.values())
+  return Array.from(availabilities.values());
 }
